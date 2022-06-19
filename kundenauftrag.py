@@ -12,12 +12,13 @@
 #Hardware: BMP180(scl=Pin22,sda=Pin21), ESP32TTG0, rote_Led=Pin25, gelbe_Led=Pin27, 
 #          Matrix Anzeige(CLK=Pin15,DIN=Pin13,CS=Pin2), Lichtschranke E3F-R2NK=Pin26
 
-#Bibliotheken: bmp.py -> in der ReadMe Datei
+#Bibliotheken: bmp.py, max7219 -> in der ReadMe Datei, Verweis auf dei NodeRed-App
 
+#--------------------------------------------------------------------------------------------------------------
 #-----------------------Initialisierung Start------------------------------------------------------------------
 
 from bmp180 import BMP180                       
-from machine import SoftI2C, Pin, SPI       # Pin (BMP180, TFT) - SoftSPI (TFT) - SoftI2C (BMP180)
+from machine import SoftI2C, Pin, SPI                  
 from umqtt.simple import MQTTClient
 import time     
 import max7219      
@@ -71,6 +72,7 @@ if not wlan.isconnected():
 while True:
     mqtt_Baum = MQTTClient(CLIENT_ID, MQTT_SERVER)          #MQTT Server verbinden
     mqtt_Baum.connect()
+    print("MQTT verbunden!")
    
     eingang = lichtschranke.value()                         #Abfrage Lichtschrankensignal 1 -> 0 da Oeffnersignal
     if eingang and was_off_before:                          
@@ -113,7 +115,7 @@ while True:
 #-----------Auswertung Temperatur Messwerte Ende------------------------
 
     display.fill(0)                                    #Ausgabe Temperatur LED-Matrix
-    display.text(str(ausgabe_matrix) +" C",0,0,1)       
+    display.text(str(ausgabe_matrix) +" C", 0, 0, 1)       
     display.fill_rect(19,0,2,2,1)                       
     display.show()                                      
  
@@ -139,8 +141,6 @@ while True:
         ]    
     }
 
-
-    print("MQTT verbunden!")
 
     mqtt_Baum.publish(MQTT_TOPIC_TEMP_DATA, json.dumps(data_Werte))          #Publishen der Daten
     mqtt_Baum.disconnect()
